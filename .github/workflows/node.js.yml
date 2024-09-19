@@ -5,6 +5,10 @@ name: Node.js CI
 
 on:
   workflow_dispatch:
+    inputs:
+      tag:
+        type: text
+        required: true
     
 jobs:
   build:
@@ -19,7 +23,13 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
 
-    - run: node -e "console.log('tag='+process.argv[1].split('.')[0])" v1.2.3 >> "$GITHUB_OUTPUT"
+    - run: node -e "console.log('tag='+process.argv[1].split('.')[0])" "${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
       id: generate-tag
 
-    - run: echo "output = ${{ toJson(steps.generate-tag.outputs) }}"
+    - run: |
+        git config user.name "manferlo81"
+        git config user.email "manferlo81@gmail.com"
+
+    - run: |
+        git tag ${{ steps.generate-tag.outputs.tag }} -f
+        git push --tags -f
